@@ -1,4 +1,3 @@
-// src/components/Whiteboard.js
 import React, { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import '../styles.css'; // Import the CSS file for styling
@@ -8,7 +7,6 @@ const Whiteboard = () => {
     const socketRef = useRef();
     const [color, setColor] = useState('#000000'); // Initial color: black
     const [lineWidth, setLineWidth] = useState(2); // Initial line thickness: 2
-    const [isDrawing, setIsDrawing] = useState(false); // Flag to control drawing mode
 
     useEffect(() => {
         const canvas = canvasRef.current;
