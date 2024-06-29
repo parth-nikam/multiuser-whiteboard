@@ -1,0 +1,31 @@
+/* src/styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.App {
+    text-align: center;
+}
+
+canvas {
+    border: 2px solid #000000;
+    cursor: crosshair;
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+.color-picker {
+    margin-right: 10px;
+}
+
+.line-thickness {
+    margin-left: 10px;
+}
