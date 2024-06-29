@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import '../styles.css'; // Import the CSS file for styling
 
-const Whiteboard = () => {
+const Whiteboard = ({ room }) => {
     const canvasRef = useRef(null);
     const socketRef = useRef();
     const [color, setColor] = useState('#000000'); // Initial color: black
@@ -16,6 +16,8 @@ const Whiteboard = () => {
         let drawing = false;
 
         socketRef.current = io.connect('http://localhost:5001');
+
+        socketRef.current.emit('joinRoom', room);
 
         const startDrawing = (e) => {
             drawing = true;
@@ -38,6 +40,7 @@ const Whiteboard = () => {
             context.stroke();
 
             const data = {
+                room,
                 prevX,
                 prevY,
                 currX: currentX,
@@ -76,7 +79,7 @@ const Whiteboard = () => {
             canvas.removeEventListener('mouseup', stopDrawing);
             socketRef.current.disconnect();
         };
-    }, [color, lineWidth]);
+    }, [color, lineWidth, room]);
 
     const handleColorChange = (e) => {
         setColor(e.target.value);
@@ -88,7 +91,7 @@ const Whiteboard = () => {
 
     return (
         <div className="App">
-            <h1>Multiuser Whiteboard</h1>
+            <h1>Room: {room}</h1>
             <canvas ref={canvasRef} width={800} height={600}></canvas>
             <div className="controls">
                 <input
