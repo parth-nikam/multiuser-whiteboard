@@ -1,6 +1,8 @@
+// src/components/Whiteboard.js
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
+import '../styles/styles.css';
 
 const Whiteboard = () => {
     const { roomId } = useParams();
@@ -8,7 +10,6 @@ const Whiteboard = () => {
     const socketRef = useRef();
     const [color, setColor] = useState('#000000');
     const [lineWidth, setLineWidth] = useState(2);
-    const [userCount, setUserCount] = useState(0);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -18,11 +19,16 @@ const Whiteboard = () => {
         let drawing = false;
 
         socketRef.current = io.connect('http://localhost:5001');
-
         socketRef.current.emit('joinRoom', { roomId });
 
-        socketRef.current.on('userCount', (count) => {
-            setUserCount(count);
+        socketRef.current.on('drawing', (data) => {
+            const { prevX, prevY, currX, currY, color, lineWidth } = data;
+            context.beginPath();
+            context.moveTo(prevX, prevY);
+            context.lineTo(currX, currY);
+            context.strokeStyle = color;
+            context.lineWidth = lineWidth;
+            context.stroke();
         });
 
         const startDrawing = (e) => {
@@ -45,7 +51,7 @@ const Whiteboard = () => {
             context.lineWidth = lineWidth;
             context.stroke();
 
-            const data = {
+            socketRef.current.emit('drawing', {
                 roomId,
                 prevX,
                 prevY,
@@ -53,9 +59,7 @@ const Whiteboard = () => {
                 currY: currentY,
                 color,
                 lineWidth,
-            };
-
-            socketRef.current.emit('drawing', data);
+            });
 
             prevX = currentX;
             prevY = currentY;
@@ -69,23 +73,13 @@ const Whiteboard = () => {
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
 
-        socketRef.current.on('drawing', (data) => {
-            const { prevX, prevY, currX, currY, color, lineWidth } = data;
-            context.beginPath();
-            context.moveTo(prevX, prevY);
-            context.lineTo(currX, currY);
-            context.strokeStyle = color;
-            context.lineWidth = lineWidth;
-            context.stroke();
-        });
-
         return () => {
             canvas.removeEventListener('mousedown', startDrawing);
             canvas.removeEventListener('mousemove', draw);
             canvas.removeEventListener('mouseup', stopDrawing);
             socketRef.current.disconnect();
         };
-    }, [color, lineWidth, roomId]);
+    }, [roomId, color, lineWidth]);
 
     const handleColorChange = (e) => {
         setColor(e.target.value);
@@ -96,9 +90,8 @@ const Whiteboard = () => {
     };
 
     return (
-        <div className="whiteboard">
-            <h1>Whiteboard Room: {roomId}</h1>
-            <p>Users in Room: {userCount}</p>
+        <div>
+            <h2>Whiteboard Room: {roomId}</h2>
             <canvas ref={canvasRef} width={800} height={600}></canvas>
             <div className="controls">
                 <input
