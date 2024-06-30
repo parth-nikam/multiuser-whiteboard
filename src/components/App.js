@@ -1,47 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Link,
+} from 'react-router-dom';
+import HostComponent from './HostComponent';
+import ParticipantComponent from './ParticipantComponent';
 import Whiteboard from './Whiteboard';
-import { v4 as uuidv4 } from 'uuid';
 
 const App = () => {
-    const [room, setRoom] = useState('');
-    const [inRoom, setInRoom] = useState(false);
-
-    const handleCreateRoom = () => {
-        const newRoom = uuidv4();
-        setRoom(newRoom);
-    };
-
-    const handleJoinRoom = () => {
-        setInRoom(true);
-    };
-
-    const handleCopyRoomId = () => {
-        navigator.clipboard.writeText(room);
-        alert('Room ID copied to clipboard!');
-    };
-
     return (
-        <div className="App">
-            {!inRoom ? (
-                <div>
-                    <h1>Multiuser Whiteboard</h1>
-                    <input
-                        type="text"
-                        placeholder="Enter room name or create a new room"
-                        value={room}
-                        onChange={(e) => setRoom(e.target.value)}
-                    />
-                    <button onClick={handleCreateRoom}>Create Room</button>
-                    {room && (
-                        <button onClick={handleCopyRoomId}>Copy Room ID</button>
-                    )}
-                    <button onClick={handleJoinRoom}>Join Room</button>
-                </div>
-            ) : (
-                <Whiteboard room={room} />
-            )}
-        </div>
+        <Router>
+            <nav>
+                <ul>
+                    <li>
+                        <Link to="/">Home</Link>
+                    </li>
+                </ul>
+            </nav>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/host" element={<HostComponent />} />
+                <Route path="/participant" element={<ParticipantComponent />} />
+                <Route path="/whiteboard/:roomId" element={<Whiteboard />} />
+            </Routes>
+        </Router>
     );
 };
+
+const Home = () => (
+    <div>
+        <h1>Multiuser Whiteboard</h1>
+        <div>
+            <Link to="/host">Host</Link>
+        </div>
+        <div>
+            <Link to="/participant">Participant</Link>
+        </div>
+    </div>
+);
 
 export default App;

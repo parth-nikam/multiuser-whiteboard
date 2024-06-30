@@ -10,22 +10,30 @@ const io = socketIo(server, {
     },
 });
 
+const rooms = {};
+
 io.on('connection', (socket) => {
     console.log('a user connected');
 
-    socket.on('createRoom', (room) => {
-        socket.join(room);
-        console.log(`Room created: ${room}`);
-    });
+    socket.on('joinRoom', ({ roomId }) => {
+        if (!rooms[roomId]) {
+            rooms[roomId] = {
+                userCount: 0,
+            };
+        }
 
-    socket.on('joinRoom', (room) => {
-        socket.join(room);
-        console.log(`User joined room: ${room}`);
-    });
+        socket.join(roomId);
+        rooms[roomId].userCount++;
+        io.to(roomId).emit('userCount', rooms[roomId].userCount);
 
-    socket.on('drawing', (data) => {
-        const room = data.room;
-        socket.to(room).emit('drawing', data);
+        socket.on('drawing', (data) => {
+            io.to(roomId).emit('drawing', data);
+        });
+
+        socket.on('disconnect', () => {
+            rooms[roomId].userCount--;
+            io.to(roomId).emit('userCount', rooms[roomId].userCount);
+        });
     });
 
     socket.on('disconnect', () => {

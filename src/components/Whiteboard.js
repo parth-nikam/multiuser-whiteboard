@@ -1,12 +1,14 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
-import '../styles.css'; // Import the CSS file for styling
 
-const Whiteboard = ({ room }) => {
+const Whiteboard = () => {
+    const { roomId } = useParams();
     const canvasRef = useRef(null);
     const socketRef = useRef();
-    const [color, setColor] = useState('#000000'); // Initial color: black
-    const [lineWidth, setLineWidth] = useState(2); // Initial line thickness: 2
+    const [color, setColor] = useState('#000000');
+    const [lineWidth, setLineWidth] = useState(2);
+    const [userCount, setUserCount] = useState(0);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -17,7 +19,11 @@ const Whiteboard = ({ room }) => {
 
         socketRef.current = io.connect('http://localhost:5001');
 
-        socketRef.current.emit('joinRoom', room);
+        socketRef.current.emit('joinRoom', { roomId });
+
+        socketRef.current.on('userCount', (count) => {
+            setUserCount(count);
+        });
 
         const startDrawing = (e) => {
             drawing = true;
@@ -40,7 +46,7 @@ const Whiteboard = ({ room }) => {
             context.stroke();
 
             const data = {
-                room,
+                roomId,
                 prevX,
                 prevY,
                 currX: currentX,
@@ -79,7 +85,7 @@ const Whiteboard = ({ room }) => {
             canvas.removeEventListener('mouseup', stopDrawing);
             socketRef.current.disconnect();
         };
-    }, [color, lineWidth, room]);
+    }, [color, lineWidth, roomId]);
 
     const handleColorChange = (e) => {
         setColor(e.target.value);
@@ -90,8 +96,9 @@ const Whiteboard = ({ room }) => {
     };
 
     return (
-        <div className="App">
-            <h1>Room: {room}</h1>
+        <div className="whiteboard">
+            <h1>Whiteboard Room: {roomId}</h1>
+            <p>Users in Room: {userCount}</p>
             <canvas ref={canvasRef} width={800} height={600}></canvas>
             <div className="controls">
                 <input
