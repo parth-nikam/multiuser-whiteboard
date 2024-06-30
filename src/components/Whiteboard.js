@@ -1,4 +1,3 @@
-// src/components/Whiteboard.js
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
@@ -90,7 +89,7 @@ const Whiteboard = () => {
     };
 
     return (
-        <div>
+        <div className="center">
             <h2>Whiteboard Room: {roomId}</h2>
             <canvas ref={canvasRef} width={800} height={600}></canvas>
             <div className="controls">
